@@ -1,4 +1,4 @@
-import {Observable, Subscription, Subject} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 
 const resolveDefer = (clean) => (f) => {
   if (f == null) {
@@ -15,6 +15,9 @@ const resolveDefer = (clean) => (f) => {
   if (f instanceof Subscription) {
     return () => f.unsubscribe();
   }
+  if (f.nodeType != null) {
+    return () => f.remove();
+  }
   switch (typeof f) {
     case "function": return f;
     case "number"  : return () => clearInterval(f);
@@ -23,8 +26,7 @@ const resolveDefer = (clean) => (f) => {
   throw {msg: "defer argument can't be resolved", arg: f};
 };
 
-export default function getClean(parentSignal=null) {
-  const signal = new Subject();
+export default function getClean() {
   const d = [];
   const clean = () => {
     signal.complete();
@@ -35,12 +37,10 @@ export default function getClean(parentSignal=null) {
   const resolve = resolveDefer(clean);  
   const defer = (...f) => {
     for (let i = 0; i < f.length; i++) {
-      let resolved = resolve(f[i]);
       if (resolved != null) {
         d.push(resolved);
       }
     }
   };
-  defer(parentSignal);  
-  return [defer, clean, signal];
+  return [defer, clean];
 };

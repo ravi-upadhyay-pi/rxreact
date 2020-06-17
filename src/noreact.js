@@ -21,27 +21,23 @@ function render(component, host) {
 }
 
 function renderReactive(component, host) {
-  const pseudoNode = document.createElement("div");
+  let pseudoNode = document.createElement("div");
   pseudoNode.style.display = "none";
   host.appendChild(pseudoNode);
-  const reactive = {
-    element: pseudoNode
-  };
-  replaceReactive(component, reactive);  
-}
-
-function replaceReactive(component, reactive) {
   component.subscribe(newcomponent => {
-    if (typeof newcomponent === "object") {
-      throw {
-        msg: "reactive component should not publish objects",
-        published: newcomponent};
-    }
     if (newcomponent.nodeType == null) {
+      if (typeof newcomponent === "object") {
+        throw {
+          msg: "reactive component should not publish objects",
+          published: newcomponent};
+      }
       newcomponent = document.createTextNode(newcomponent);
     }
-    reactive.element.replaceWith(newcomponent);
-    reactive.element = newcomponent;
+    pseudoNode.replaceWith(newcomponent);
+    if (pseudoNode.clean != null) {
+      pseudoNode.clean();
+    }
+    pseudoNode = newcomponent;
   });
 }
 
@@ -51,15 +47,21 @@ function h(tag, attrs, ...children) {
   }
   if (typeof tag === "function") {
     const [defer, clean, signal] = getClean();
-    return tag({...attrs, defer}, ...children);
+    const component = tag({defer, ...attrs}, ...children);
+    component.clean = clean;
+    return component;
   } else if (typeof tag === "string") {
+    const [defer, clean, signal] = getClean();
     let element = document.createElement(tag);
     for (let name in attrs) {
       setAttribute(element, name, attrs[name]);
     }
     for (let i = 0; i < children.length; i++) {
+      defer(children[i].clean);
       render(children[i], element);
     }
+    defer(element);
+    element.clean = clean;
     return element;
   } else {
     throw {
