@@ -14,37 +14,23 @@ import {BehaviorSubject, Subject, Observable} from 'rxjs';
 import {tap, takeWhile, scan, map} from 'rxjs/operators';
 ```
 
-
-The function timer will be called just once. In react the function is called as soon as it's state, or props change.
-Instead, we just call the function once, and it returns a normal dom node. Here `div` node has a reactive child,
-`x`, which is `Observable` class from `rxjs` library. The rendering library detects that `x` is reactive, so
-it listens to it, and just calls the `replaceWith` method of node to replace the old element with new element.
-Using `defer`, resources can be registered for cleanup. It accepts an integer, which is treated has handle for
-clearing setInterval; or a subscription class, which is closed on cleanup; or a string, which is printed on console,
-useful for debugging; or a dom node; or an observable which when completes, cleanup logic is called.
-
-
+The function timer will be called just once. In react a function is called again as soon as it's state, or props
+change. Instead, we just call the function once, and it returns a normal dom node. Here `div` node has a reactive
+child, `x`, which is `Observable` class from `rxjs` library. The rendering library detects that `x` is reactive,
+so it listens to it, and calls `replaceWith` method of the child text node to replace with new element.
 
 ```js
-function Timer({defer}) {
-  defer("Timer cleaned");
-  const x = new Observable(subscriber => {    
-    let i = 0;
-    subscriber.next(i);
-    const handle = setInterval(
-      () => subscriber.next(++i),
-      1000);
-    defer("timer interval cleared", handle);
-  });
+function Timer({clean}) {
+  const x = interval(1000).pipe(takeUntil(clean));
   return <div>{x}</div>;
 }
 ```
 
+Library is super small (excluding rxjs part). And `rxjs` is a library which should be present in any UI 
+application. The library is just ~75 lines of code which includes propers spaces and indentation. 
 
-This library is super small (excluding rxjs part). And `rxjs` is a library which should be present in any UI 
-application. The library is just ~150 lines of code which includes propers spaces and indentation. Let's check the
-typical `Form` component. Instead of state, we can use a `Subject` (Subject is an observable which can be 
-subscribed multiple times). Notice how the subject `x` looks similar to a typical store with actions.
+Let's check the typical `Form` component. Instead of state, we can use a `Subject` (Subject is an observable 
+which can be subscribed multiple times). Notice how the subject `x` looks similar to a typical store with actions.
 
 To be as close to HTML conventions as possible, the event handlers are fully untouched. If an attribute is function
 for example `update` is a function, so the dom node will register it is `node.oninput=update`, otherwise 

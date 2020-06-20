@@ -8,7 +8,7 @@ const dev = (argv) => argv.mode === 'development';
 module.exports = (env, argv) => ({
   mode: argv.mode,
   devtool: dev(argv) ? 'source-map' : false,
-  entry: path.join(__dirname, 'src/index.jsx'),
+  entry: path.join(__dirname, 'src/test.jsx'),
   output: {
     path: path.join(__dirname, 'dist'),
     filename: '[name].[hash].js',
@@ -70,9 +70,7 @@ module.exports = (env, argv) => ({
   },
   plugins: [
     new MiniCssExtractPlugin(),
-    new HtmlWebpackPlugin({
-      template: 'src/index.html'      
-    }),
+    new HtmlWebpackPlugin(),
   ].filter(Boolean),
   devServer: {
     contentBase: path.join(__dirname, 'dist'),

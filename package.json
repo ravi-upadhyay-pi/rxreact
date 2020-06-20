@@ -1,9 +1,10 @@
 {
-  "name": "Bemused",
+  "name": "@raviupadhyay/reactrx",
   "version": "0.1.0",
-  "private": true,
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "dependencies": {
-    "classnames": "^2.2.6",
     "rxjs": "^6.5.5"
   },
   "scripts": {
@@ -11,6 +12,7 @@
     "build": "webpack --mode production"
   },
   "devDependencies": {
+    "classnames": "^2.2.6",
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-react": "^7.10.1",

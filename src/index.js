@@ -1,16 +1,11 @@
 import {Observable, Subject, Subscription, asyncScheduler, of} from 'rxjs';
 import {scan, finalize, observeOn} from 'rxjs/operators';
-import getClean from 'cleaner';
 
 function render(component, host) {
   if (component instanceof Observable) {
     return renderReactive(component, host);
   }
-  if (component.nodeType == null) {
-    component = document.createTextNode(component);
-    host.appendChild(component);
-    return;
-  }
+  if (component.nodeType == null) component = document.createTextNode(component);
   if (component.tagName === "FRAGMENT") {
     for (let i = 0; i < component.childNodes.length; i++) {
       render(component.childNodes[i], host);
@@ -25,18 +20,8 @@ function renderReactive(component, host) {
   pseudoNode.style.display = "none";
   host.appendChild(pseudoNode);
   component.subscribe(newcomponent => {
-    if (newcomponent.nodeType == null) {
-      if (typeof newcomponent === "object") {
-        throw {
-          msg: "reactive component should not publish objects",
-          published: newcomponent};
-      }
-      newcomponent = document.createTextNode(newcomponent);
-    }
+    if (newcomponent.nodeType == null) newcomponent = document.createTextNode(newcomponent);
     pseudoNode.replaceWith(newcomponent);
-    if (pseudoNode.clean != null) {
-      pseudoNode.clean();
-    }
     pseudoNode = newcomponent;
   });
 }
@@ -46,26 +31,19 @@ function h(tag, attrs, ...children) {
     tag = "fragment";
   }
   if (typeof tag === "function") {
-    const [defer, clean, signal] = getClean();
-    const component = tag({defer, ...attrs}, ...children);
-    component.clean = clean;
-    return component;
+    return tag(attrs, ...children);
   } else if (typeof tag === "string") {
-    const [defer, clean, signal] = getClean();
     let element = document.createElement(tag);
     for (let name in attrs) {
       setAttribute(element, name, attrs[name]);
     }
     for (let i = 0; i < children.length; i++) {
-      defer(children[i].clean);
       render(children[i], element);
     }
-    defer(element);
-    element.clean = clean;
     return element;
   } else {
     throw {
-      msg: "tag is not supported",
+      msg: "tag type is not supported",
       tag: tag
     };
   }
@@ -91,8 +69,7 @@ const React = {
   createElement: h
 };
 
-export default React;
-
 export {
   render,
+  React,
 };
