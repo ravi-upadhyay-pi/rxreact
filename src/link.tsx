@@ -1,21 +1,29 @@
-import { Subject } from 'rxjs';
 import { React } from './reactrx';
+import { Subject } from 'rxjs';
 
-export type LinkProps = {
-  [key: string]: any;
-  route: Subject<string>;
-  href: string;
+export interface LinkProp {
+    route: Subject<string>;
+    href: string;
+    className?: string;
+    onclick?: () => void;
 }
 
-function Link({route, href, ...props}: LinkProps, children: JSX.Element | JSX.Element[])  {
-  const changeRoute = (e: Event) => {
-    route.next(href);
-    e.preventDefault();
-    return false;
-  };
-  return (
-    <a href={href} onclick={changeRoute} {...props}>{children}</a>
-  );
-};
-
-export default Link;
+export function Link({route, href, className, onclick}: LinkProp, ...children: JSX.Element[]): JSX.Element {
+    className = className || "";
+    let onclickHandler = (event: any) => {
+        event.preventDefault();
+        route.next(href)
+    };
+    if (onclick != null) {
+        onclickHandler = (event: any) => {
+            event.preventDefault();
+            onclick();
+            route.next(href);
+        }
+    }
+    return (
+        <a onclick={onclickHandler} href={href} class={className}>
+            {children}
+        </a>
+    );
+}

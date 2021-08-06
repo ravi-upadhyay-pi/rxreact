@@ -3,17 +3,17 @@ import {finalize, tap} from "rxjs/operators";
 import {render, Renderable} from './reactrx';
 import {isEqual, clone} from 'lodash';
 
-export type ViewProps<T> = {
+export type ListViewProp<T> = {
   observable: Observable<T>;
   index: number;
 }
 
-export type Props<T> = {
+export type ListProp<T> = {
   list: Observable<T[]>;
-  view: (props: ViewProps<T>) => Renderable;
+  view: (props: ListViewProp<T>) => Renderable;
 }
 
-export function List<T>(props: Props<T>): Renderable {
+export function List<T>(props: ListProp<T>): Renderable {
   let container = document.createElement("span");
   let views: [Subject<T>, T][] = [];
   props.list.pipe(

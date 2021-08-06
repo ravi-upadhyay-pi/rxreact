@@ -1,16 +1,20 @@
 {
   "name": "@raviupadhyay/reactrx",
-  "version": "0.2.5",
+  "description": "node version: 16.4.1; npm version: 7.18.1",
+  "version": "0.4.8",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "rxjs": "^6.5.5"
-  },
-  "scripts": {},
-  "devDependencies": {
+    "rxjs": "^6.5.5",
     "@types/lodash": "^4.14.168"
   },
-  "main": "./dist/reactrx.js"
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  },
+  "scripts": {
+  },
+  "files": ["src/"],
+  "main": "./src/reactrx.ts"
 }

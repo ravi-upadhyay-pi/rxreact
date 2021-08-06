@@ -1,45 +1,37 @@
 import {React} from "./reactrx";
 import {Subject} from "rxjs";
 import {map, startWith} from "rxjs/operators";
-import Link, {LinkProps} from "./link";
 
-type RouterProps = {
-  route: BrowserHistory;
-  fallback?: () => JSX.Element;
+interface RouteProp {
+  route: Subject<string>;
 }
 
-type Component = (props: RouterComponentProps) => JSX.Element;
-
-export type ContextualLinkProps = {
-  [key: string]: any;
-  href: string;
-}
-
-export type RouterComponentProps = {
-  route: BrowserHistory;
-  Link: (props: ContextualLinkProps, ...children: JSX.Element[]) => JSX.Element;
+interface PageProp extends RouteProp {
   params: Map<string, string>;
 }
 
-function Router({route, fallback}: RouterProps, ...children: [string, () => JSX.Element][]): JSX.Element {
+interface RouterProp extends RouteProp {
+  fallback?: () => JSX.Element;
+}
+
+function Router({route, fallback}: RouterProp, ...children: [string, () => JSX.Element][]): JSX.Element {
   const routeMap: Map<string, () => JSX.Element> = new Map();
   for (let i = 0; i < children.length; i++) {
     routeMap.set(children[i][0], children[i][1]);
   }
-  fallback = fallback || (() => <div>Location Not Found</div>);
-  const routeLink = (props: ContextualLinkProps, ...children: JSX.Element[]) => {
-    return Link({route, ...props}, children);
-  };
+  fallback = fallback || (() => <div>Location Not Found</div>);  
   return route.pipe(
     startWith(window.location.pathname),
     map(value => {
       const [Selected, params] = matchTemplates(value, routeMap, fallback);
-      return <Selected {...{params, route, Link: routeLink}}/>;
+      return <Selected {...{params, route}}/>;
     })
   );
 };
 
-export function Route({path, component}: {path: string, component: Component}): [string, Component] {
+type Component = (props: PageProp) => JSX.Element;
+
+function Route({path, component}: {path: string, component: Component}): [string, Component] {
   return [path, component];
 }
 
@@ -88,21 +80,27 @@ function matchTemplate(template: string[], route: string[]): [boolean, Map<strin
   return [true, params];
 };
 
-export class BrowserHistory extends Subject<string> {
+class BrowserHistory extends Subject<string> {
+  popStateListener: () => void;
+  
   constructor() {
     super();
+    this.popStateListener = () => this.next(window.location.pathname);
     window.addEventListener('popstate', this.popStateListener);
-    super.subscribe(route => window.history.pushState(null, null, route));
-  }
-
-  private popStateListener(_: any) {
-    super.next(window.location.pathname);
+    this.subscribe((route: string) => window.history.pushState(null, null, route));
   }
 
   stop() {
     window.removeEventListener('popstate', this.popStateListener);
-    super.unsubscribe();
+    this.unsubscribe();
   }
 }
 
-export default Router;
+export {
+  Router,
+  Route,
+  RouterProp,
+  PageProp,
+  RouteProp,
+  BrowserHistory,
+}

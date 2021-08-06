@@ -1,7 +1,8 @@
 import {Observable} from 'rxjs';
 import {finalize, tap} from 'rxjs/operators';
-import * as Router from './router';
-import * as List from './list';
+import { Link, LinkProp } from './link';
+import {List, ListProp, ListViewProp} from './list';
+import {Router, PageProp, RouteProp, RouterProp, Route, BrowserHistory} from './router';
 
 type SimpleAttributeValue = 
     string |
@@ -110,5 +111,14 @@ export {
   render,
   React,
   Router,
-  List
+  BrowserHistory,
+  Route,
+  RouterProp,
+  PageProp,
+  RouteProp,
+  List,
+  ListProp,
+  ListViewProp,
+  Link,
+  LinkProp,
 };
